@@ -6,7 +6,7 @@ import { ConversationItem, Question, Decision } from '@/types';
 function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('GOOGLE_AI_API_KEY is not defined in environment variables');
+    throw new Error('GEMINI_API_KEY is not defined in environment variables');
   }
   return new GoogleGenerativeAI(apiKey);
 }
@@ -17,7 +17,7 @@ export async function listAvailableModels() {
     const genAI = getGeminiClient();
     // This is not directly supported in the JS SDK, but we'll log what models we're trying to use
     console.log("Attempting to use model: gemini-1.5-pro");
-    return ["gemini-1.5-pro", "gemini-1.5-flash"];
+    return ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro" ,"gemini-1.0-pro"];
   } catch (error) {
     console.error("Error listing models:", error);
     throw error;

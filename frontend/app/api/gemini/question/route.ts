@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         error: 'Failed to process question', 
         details: errorMessage,
         stack: errorStack,
-        apiKey: process.env.GOOGLE_AI_API_KEY ? "API key is set" : "API key is missing" 
+        apiKey: process.env.GEMINI_API_KEY ? "API key is set" : "API key is missing" 
       },
       { status: 500 }
     );
