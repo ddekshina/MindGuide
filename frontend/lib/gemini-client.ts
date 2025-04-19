@@ -28,12 +28,32 @@ export async function listAvailableModels() {
 function formatConversationHistory(history: ConversationItem[]) {
   const formattedHistory = [];
   
+  // Ensure the first message has a 'user' role for Gemini API
+  // If there's no user message yet, we'll create a placeholder
+  if (history.length > 0 && history[0].role !== 'user') {
+    // Create a placeholder user message if needed
+    formattedHistory.push({
+      role: 'user',
+      parts: [{ text: 'Hello, I need assistance with decision making.' }],
+    });
+  }
+  
   for (let i = 0; i < history.length; i++) {
     const item = history[i];
-    formattedHistory.push({
-      role: item.role === 'user' ? 'user' : 'model',
-      parts: [{ text: item.content }],
-    });
+    
+    // Skip system messages - Gemini doesn't support them directly
+    // Or convert them to model responses if they contain important info
+    if (item.role === 'system') {
+      formattedHistory.push({
+        role: 'model',
+        parts: [{ text: item.content }],
+      });
+    } else {
+      formattedHistory.push({
+        role: 'user',
+        parts: [{ text: item.content }],
+      });
+    }
   }
   
   return formattedHistory;
@@ -48,9 +68,19 @@ export async function generateNextQuestion(conversationHistory: ConversationItem
     // Format conversation for the Google AI API
     const formattedHistory = formatConversationHistory(conversationHistory);
     
+    // Ensure we have at least one user message
+    if (formattedHistory.length === 0 || formattedHistory[0].role !== 'user') {
+      formattedHistory.unshift({
+        role: 'user',
+        parts: [{ text: 'I need help with making a decision about my professional growth.' }],
+      });
+    }
+    
+    console.log("Formatted history for Gemini:", JSON.stringify(formattedHistory, null, 2));
+    
     // Create a chat session
     const chat = model.startChat({
-      history: formattedHistory.length > 0 ? formattedHistory.slice(0, -2) : [],
+      history: formattedHistory,
       generationConfig: {
         temperature: 0.7,
         topK: 40,
@@ -137,9 +167,19 @@ export async function generateDecision(conversationHistory: ConversationItem[]):
     // Format conversation for the Google AI API
     const formattedHistory = formatConversationHistory(conversationHistory);
     
+    // Ensure we have at least one user message
+    if (formattedHistory.length === 0 || formattedHistory[0].role !== 'user') {
+      formattedHistory.unshift({
+        role: 'user',
+        parts: [{ text: 'I need help with making a decision about my professional growth.' }],
+      });
+    }
+    
+    console.log("Formatted history for Gemini decision:", JSON.stringify(formattedHistory, null, 2));
+    
     // Create a chat session
     const chat = model.startChat({
-      history: formattedHistory.length > 0 ? formattedHistory.slice(0, -2) : [],
+      history: formattedHistory,
       generationConfig: {
         temperature: 0.7,
         topK: 40,
