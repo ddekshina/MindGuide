@@ -14,13 +14,16 @@ export async function getNextQuestion(
     });
 
     if (!response.ok) {
-      throw new Error('Failed to get next question');
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`API Error (${response.status}):`, errorData);
+      throw new Error(`Failed to get next question: ${errorData.details || response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error getting next question:', error);
-    return null;
+    throw error; // Re-throw to allow UI to handle it
   }
 }
 
@@ -37,12 +40,15 @@ export async function getDecision(
     });
 
     if (!response.ok) {
-      throw new Error('Failed to get decision');
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`API Error (${response.status}):`, errorData);
+      throw new Error(`Failed to get decision: ${errorData.details || response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error getting decision:', error);
-    return null;
+    throw error; // Re-throw to allow UI to handle it
   }
 }

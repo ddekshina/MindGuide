@@ -1,13 +1,14 @@
 // app/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ConversationItem, Question, Decision } from '@/types';
 import { Conversation } from '@/components/mindguide/conversation';
 import { QuestionForm } from '@/components/mindguide/question-form';
 import { DecisionOutput } from '@/components/mindguide/decision-output';
 import { getNextQuestion, getDecision } from '@/lib/gemini';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle } from 'lucide-react';
 
 const INITIAL_QUESTION: Question = {
   id: 'initial',
@@ -26,45 +27,48 @@ export default function Home() {
   const [currentQuestion, setCurrentQuestion] = useState<Question>(INITIAL_QUESTION);
   const [decision, setDecision] = useState<Decision | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleQuestionSubmit = async (answer: string) => {
-    setIsLoading(true);
-    
-    // Add user's answer to conversation history
-    const updatedHistory = [
-      ...conversationHistory,
-      { role: 'system' as const, content: currentQuestion.text },
-      { role: 'user' as const, content: answer },
-    ];
-    
-    setConversationHistory(updatedHistory);
-    
-    // Check if we've reached decision point (after 5 exchanges)
-    if (updatedHistory.filter(item => item.role === 'user').length >= 5) {
-      const decisionResult = await getDecision(updatedHistory);
-      setDecision(decisionResult);
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Add user's answer to conversation history
+      const updatedHistory = [
+        ...conversationHistory,
+        { role: 'system' as const, content: currentQuestion.text },
+        { role: 'user' as const, content: answer },
+      ];
+      
+      setConversationHistory(updatedHistory);
+      
+      // Check if we've reached decision point (after 5 exchanges)
+      if (updatedHistory.filter(item => item.role === 'user').length >= 5) {
+        const decisionResult = await getDecision(updatedHistory);
+        if (decisionResult) {
+          setDecision(decisionResult);
+        }
+      } else {
+        // Otherwise get next question
+        const nextQuestion = await getNextQuestion(updatedHistory);
+        if (nextQuestion) {
+          setCurrentQuestion(nextQuestion);
+        }
+      }
+    } catch (err) {
+      setError((err as Error).message || 'An unexpected error occurred');
+      console.error('Error in question submission:', err);
+    } finally {
       setIsLoading(false);
-      return;
     }
-    
-    // Otherwise get next question
-    const nextQuestion = await getNextQuestion(updatedHistory);
-    
-    if (nextQuestion) {
-      setCurrentQuestion(nextQuestion);
-    } else {
-      // Fallback in case of error
-      const decisionResult = await getDecision(updatedHistory);
-      setDecision(decisionResult);
-    }
-    
-    setIsLoading(false);
   };
 
   const handleReset = () => {
     setConversationHistory([]);
     setCurrentQuestion(INITIAL_QUESTION);
     setDecision(null);
+    setError(null);
   };
 
   return (
@@ -77,6 +81,25 @@ export default function Home() {
           </p>
         </CardHeader>
       </Card>
+
+      {error && (
+        <Card className="w-full max-w-2xl mx-auto mb-8 bg-red-50 border-red-300">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-red-700">
+              <AlertCircle size={18} />
+              <p>{error}</p>
+            </div>
+            <div className="mt-2 flex justify-end">
+              <button 
+                className="text-sm text-blue-600 hover:underline" 
+                onClick={handleReset}
+              >
+                Start Over
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {conversationHistory.length > 0 && (
         <Conversation history={conversationHistory} />

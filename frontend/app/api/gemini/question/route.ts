@@ -1,7 +1,7 @@
-// app/api/gemini/decision/route.ts
+// app/api/gemini/question/route.ts
 import { NextResponse } from 'next/server';
 import { ConversationItem } from '@/types';
-import { generateDecision } from '@/lib/gemini-client';
+import { generateNextQuestion, listAvailableModels } from '@/lib/gemini-client';
 
 export async function POST(request: Request) {
   try {
@@ -9,14 +9,27 @@ export async function POST(request: Request) {
       conversationHistory: ConversationItem[] 
     };
     
-    // Use the actual Gemini client to generate the decision
-    const decision = await generateDecision(conversationHistory);
+    // List available models for debugging
+    await listAvailableModels();
     
-    return NextResponse.json(decision);
+    // Use the Gemini client to generate the next question
+    const nextQuestion = await generateNextQuestion(conversationHistory);
+    
+    return NextResponse.json(nextQuestion);
   } catch (error) {
-    console.error('Error in decision API route:', error);
+    console.error('Error in question API route:', error);
+    
+    // Provide detailed error information
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
+    
     return NextResponse.json(
-      { error: 'Failed to generate decision' },
+      { 
+        error: 'Failed to process question', 
+        details: errorMessage,
+        stack: errorStack,
+        apiKey: process.env.GOOGLE_AI_API_KEY ? "API key is set" : "API key is missing" 
+      },
       { status: 500 }
     );
   }
