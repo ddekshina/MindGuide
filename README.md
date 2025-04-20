@@ -6,6 +6,7 @@
 ## How It Works
 
 **Initial Question:** The application starts with a general question about the user's area of focus.
+
 **Conversation Flow:**
 1. User responds to questions
 2. Responses are sent to the Gemini API
@@ -20,6 +21,7 @@
 ![Create Next App - Personal - Microsoft​ Edge 19-04-2025 22_56_01](https://github.com/user-attachments/assets/0508f51d-5cd9-4547-9d2f-1f88b87b6f86)
 ![Create Next App - Personal - Microsoft​ Edge 19-04-2025 22_54_14](https://github.com/user-attachments/assets/f9674e29-87d5-43fe-a888-43d4ecb72ceb)
 ![Create Next App - Personal - Microsoft​ Edge 19-04-2025 22_54_30](https://github.com/user-attachments/assets/97da7e4d-b131-4e0e-b27e-e25e97998d5b)
+![Create Next App - Personal - Microsoft​ Edge 19-04-2025 22_55_31](https://github.com/user-attachments/assets/70ef1698-1648-44eb-bd4f-d1080c7b5c8e)
 
 ---
 
